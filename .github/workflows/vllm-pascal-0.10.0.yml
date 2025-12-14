@@ -65,3 +65,10 @@ jobs:
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/vllm-pascal-0.10.0.yml"
+      - "patches/vllm-project/vllm/v0.10.0/**"
+      - ".ci/**"
