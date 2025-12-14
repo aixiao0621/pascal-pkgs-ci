@@ -51,6 +51,7 @@ cd "$root"
 
 # Build wheels
 mkdir -p "$root/tmp"
+echo "$SETUPTOOLS_SCM_PRETEND_VERSION_FOR_VLLM" > "$root/tmp/version_secret.txt"
 docker build \
   --build-arg "CUDA_VERSION=12.1.0" \
   --build-arg "USE_SCCACHE=0" \
@@ -59,7 +60,7 @@ docker build \
   --build-arg "nvcc_threads=2" \
   --file "$dockerfile" \
   --output "type=tar,dest=$root/tmp/build.tar" \
-  --secret "id=SETUPTOOLS_SCM_PRETEND_VERSION_FOR_VLLM" \
+  --secret "id=SETUPTOOLS_SCM_PRETEND_VERSION_FOR_VLLM,src=$root/tmp/version_secret.txt" \
   --tag "$docker_tag" \
   --target "build" \
   "$root/$repository/$ref"
@@ -86,7 +87,7 @@ if [ -n "$ghcr_token" ]; then
     --build-arg "max_jobs=2" \
     --build-arg "nvcc_threads=2" \
     --file "$dockerfile" \
-    --secret "id=SETUPTOOLS_SCM_PRETEND_VERSION_FOR_VLLM" \
+    --secret "id=SETUPTOOLS_SCM_PRETEND_VERSION_FOR_VLLM,src=$root/tmp/version_secret.txt" \
     --tag "$docker_tag" \
     --target "vllm-openai" \
     "$root/$repository/$ref"

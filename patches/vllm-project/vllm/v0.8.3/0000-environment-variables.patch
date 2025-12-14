@@ -4,7 +4,7 @@
  # if USE_SCCACHE is set, use sccache to speed up compilation
  RUN --mount=type=cache,target=/root/.cache/pip \
      --mount=type=bind,source=.git,target=.git \
-+    --mount=type=secret,id=SETUPTOOLS_SCM_PRETEND_VERSION \
++    --mount=type=secret,id=SETUPTOOLS_SCM_PRETEND_VERSION_FOR_VLLM \
 +    export SETUPTOOLS_SCM_PRETEND_VERSION=$(cat /run/secrets/SETUPTOOLS_SCM_PRETEND_VERSION_FOR_VLLM); \
      if [ "$USE_SCCACHE" = "1" ]; then \
          echo "Installing sccache..." \
