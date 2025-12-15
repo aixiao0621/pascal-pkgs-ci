@@ -1,31 +1,40 @@
 name: Publish wheels
-
+description: Download wheels artifact and publish to 'wheels' release
 inputs:
   prefix:
+    description: Prefix of the wheel filename (e.g. vllm_pascal)
     required: true
     type: string
 
 runs:
   using: "composite"
-
   steps:
     - name: Download artifact
       uses: actions/download-artifact@v4
+      with:
+        # 可选：更明确，只下载包含 wheel 的 artifact
+        pattern: ${{ inputs.prefix }}*
 
-    - name: Remove previous wheels
+    - name: Delete previous wheels (safe pattern)
       uses: mknejp/delete-release-assets@v1
       with:
-        fail-if-no-assets: false
-        fail-if-no-release: false
-        tag: wheels
         token: ${{ github.token }}
+        tag: wheels
+        fail_if_no_release: false
+        fail_if_no_assets: false
+        assets: ${{ inputs.prefix }}*.whl   # 一行！用最宽松的通配，直接匹配所有以 prefix 开头的 .whl
 
-        assets: |
-          ${{ inputs.prefix }}+*.whl
-          ${{ inputs.prefix }}-*.whl 
- 
-    - name: Upload wheels
+    - name: Create or update release and upload wheels
       uses: softprops/action-gh-release@v2
       with:
-        files: "**/${{ inputs.prefix }}*.whl"
         tag_name: wheels
+        name: Wheels  # 可选，给 release 一个标题
+        generate_release_notes: false
+        draft: false
+        prerelease: false
+        files: |
+          ${{ inputs.prefix }}/${{ inputs.prefix }}*.whl
+          # 如果 artifact 名就是 prefix，可以简化为上面这行
+          # 或者更保险地用递归 glob：
+          # **/${{ inputs.prefix }}*.whl
+        fail_on_unmatched_files: true  # 如果 glob 没匹配到文件就失败，便于调试
